@@ -1,0 +1,4 @@
+# warning - required syntax is different to normal .gitignore syntax
+*/import/*
+*/node_modules/*
+*/build*/*
