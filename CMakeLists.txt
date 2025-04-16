@@ -8,8 +8,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Set the project name
 project(RtspRadio C CXX)
 
-# include the imports
+# Include the argparse library
 set(ARG_PARSER ${CMAKE_CURRENT_SOURCE_DIR}/imports/argparse/include)
+
+# Add PortAudio submodule
+add_subdirectory(imports/portaudio)
 
 # Add subdirectories
 add_executable(rtsp_radio)
@@ -28,6 +31,12 @@ target_include_directories(rtsp_radio
   PRIVATE
   ${ARG_PARSER}
   ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# Link PortAudio to the application
+target_link_libraries(rtsp_radio
+  PRIVATE
+  portaudio
 )
 
 target_sources(rtsp_radio
