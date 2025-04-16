@@ -41,3 +41,6 @@ out/
 
 # environment variables
 .env*
+
+# cache
+.cache/
