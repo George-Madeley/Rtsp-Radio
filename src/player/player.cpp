@@ -4,19 +4,16 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <thread>
 #include <vector>
 
 namespace player
 {
-Player::Player():
-    is_playing(false)
+Player::Player()
 {
 }
 
 Player::~Player()
 {
-  stop();
   Pa_Terminate();
 }
 
@@ -25,31 +22,7 @@ bool Player::init()
   return Pa_Initialize() == paNoError;
 }
 
-void Player::play(const std::string& file_path)
-{
-  if(is_playing)
-  {
-    std::cerr << "A song is already playing. Stop it first before playing a new one." << std::endl;
-    return;
-  }
-
-  is_playing = true;
-  playback_thread = std::thread(&Player::playback, this, file_path);
-}
-
-void Player::stop()
-{
-  if(is_playing)
-  {
-    is_playing = false;
-    if(playback_thread.joinable())
-    {
-      playback_thread.join();
-    }
-  }
-}
-
-void Player::playback(const std::string& file_path)
+bool Player::play(const std::string& file_path)
 {
   std::cout << "Playing: " << file_path << std::endl;
 
@@ -58,8 +31,7 @@ void Player::playback(const std::string& file_path)
   if(!wav_file)
   {
     std::cerr << "Failed to open WAV file: " << file_path << std::endl;
-    is_playing = false;
-    return;
+    return false;
   }
 
   // Read the WAV header
@@ -68,8 +40,7 @@ void Player::playback(const std::string& file_path)
   if(wav_file.gcount() < sizeof(header))
   {
     std::cerr << "Invalid WAV file: " << file_path << std::endl;
-    is_playing = false;
-    return;
+    return false;
   }
 
   // Extract audio format information from the header
@@ -80,15 +51,13 @@ void Player::playback(const std::string& file_path)
   if(std::strncmp(header, "RIFF", 4) != 0 || std::strncmp(header + 8, "WAVE", 4) != 0)
   {
     std::cerr << "Invalid WAV file format: " << file_path << std::endl;
-    is_playing = false;
-    return;
+    return false;
   }
 
   if(bits_per_sample != 16)
   {
     std::cerr << "Only 16-bit WAV files are supported." << std::endl;
-    is_playing = false;
-    return;
+    return false;
   }
 
   // Configure PortAudio
@@ -101,15 +70,13 @@ void Player::playback(const std::string& file_path)
   if(output_params.device == paNoDevice)
   {
     std::cerr << "No default output device available." << std::endl;
-    is_playing = false;
-    return;
+    return false;
   }
 
   if(Pa_GetDeviceInfo(output_params.device) == nullptr)
   {
     std::cerr << "Failed to get device info." << std::endl;
-    is_playing = false;
-    return;
+    return false;
   }
   output_params.suggestedLatency = Pa_GetDeviceInfo(output_params.device)->defaultLowOutputLatency;
   output_params.hostApiSpecificStreamInfo = nullptr;
@@ -118,23 +85,21 @@ void Player::playback(const std::string& file_path)
          nullptr) != paNoError)
   {
     std::cerr << "Failed to open PortAudio stream." << std::endl;
-    is_playing = false;
-    return;
+    return false;
   }
 
   if(Pa_StartStream(stream) != paNoError)
   {
     std::cerr << "Failed to start PortAudio stream." << std::endl;
     Pa_CloseStream(stream);
-    is_playing = false;
-    return;
+    return false;
   }
 
   // Read and play audio data
   const size_t buffer_size = 4096;
   std::vector<char> buffer(buffer_size);
 
-  while(is_playing && wav_file.read(buffer.data(), buffer_size))
+  while(wav_file.read(buffer.data(), buffer_size))
   {
     std::streamsize frames_read = wav_file.gcount() / (bits_per_sample / 8 * channels);
     if(Pa_WriteStream(stream, buffer.data(), (unsigned long)frames_read) != paNoError)
@@ -145,7 +110,7 @@ void Player::playback(const std::string& file_path)
   }
 
   // Handle any remaining data in the buffer
-  if(is_playing && wav_file.gcount() > 0)
+  if(wav_file.gcount() > 0)
   {
     std::streamsize frames_read = wav_file.gcount() / (bits_per_sample / 8 * channels);
     Pa_WriteStream(stream, buffer.data(), (unsigned long)frames_read);
@@ -156,15 +121,8 @@ void Player::playback(const std::string& file_path)
   Pa_CloseStream(stream);
   wav_file.close();
 
-  if(is_playing)
-  {
-    std::cout << "Finished playing: " << file_path << std::endl;
-  }
-  else
-  {
-    std::cout << "Playback stopped: " << file_path << std::endl;
-  }
+  std::cout << "Finished playing: " << file_path << std::endl;
 
-  is_playing = false;
+  return true;
 }
 } // namespace player

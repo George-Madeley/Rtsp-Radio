@@ -3,9 +3,7 @@
 
 #pragma once
 
-#include <atomic>
 #include <string>
-#include <thread>
 
 namespace player
 {
@@ -20,14 +18,9 @@ public:
    */
   bool init();
 
-  void play(const std::string& file_path);
-  void stop();
+  bool play(const std::string& file_path);
 
 private:
-  std::atomic<bool> is_playing;
-  std::thread playback_thread;
-
-  void playback(const std::string& file_path);
 };
 } // namespace player
 

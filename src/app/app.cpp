@@ -36,17 +36,14 @@ void App::start(const std::string& directory_path)
       break;
     }
 
-    _player.play(file_path);
-
-    // Simulate waiting for playback to finish
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-
-    // In a real application, you would check if the playback is still active and wait accordingly.
-    // For this example, we just wait for a fixed duration.
-    // You can also implement a more sophisticated mechanism to check if the playback is still active.
-    // For example, you could use a condition variable or a future/promise mechanism to wait for the playback to finish.
-    _player.stop(); // Uncomment this if you want to stop playback after the fixed duration.
+    if(!_player.play(file_path))
+    {
+      std::cerr << "Failed to play file: " << file_path << std::endl;
+      break;
+    }
   }
+
+  std::cerr << "Playback finished." << std::endl;
 }
 
 bool App::is_directory_valid(const std::string& path) const
