@@ -27,7 +27,8 @@ void App::start(const std::string& directory_path)
   }
 
   std::vector<std::string> files;
-  while(utils::FileSelector::get_files(directory_path, files))
+  bool success = utils::FileSelector::get_files(directory_path, files);
+  while(success)
   {
     std::string file_path;
     if(!get_file(files, file_path))
