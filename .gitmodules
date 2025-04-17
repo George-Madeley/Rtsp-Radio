@@ -1,0 +1,9 @@
+[submodule "imports/argparse"]
+	path = imports/argparse
+	url = https://github.com/p-ranav/argparse.git
+[submodule "imports/portaudio"]
+	path = imports/portaudio
+	url = https://github.com/PortAudio/portaudio.git
+[submodule "imports/loguru"]
+	path = imports/loguru
+	url = https://github.com/emilk/loguru.git

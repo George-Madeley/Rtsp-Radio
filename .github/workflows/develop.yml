@@ -1,4 +1,4 @@
-name: Pre-Release
+name: Develop
 
 on:
   push:
@@ -34,7 +34,14 @@ jobs:
             c_compiler: cl
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Apply patch to PortAudio
+        run: git apply ../portaudio.patch
+        working-directory: imports/portaudio
 
       - name: Set reusable strings
         # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -56,61 +63,3 @@ jobs:
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-
-      - name: Compress Build Artifacts (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          tar -czvf rtsp-radio-${{ matrix.os }}.tar.gz -C ${{ steps.strings.outputs.build-output-dir }} .
-
-      - name: Upload Build Artifacts (Linux)
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts-${{ matrix.os }}-${{ matrix.build_type }}
-          path: rtsp-radio-${{ matrix.os }}.tar.gz
-
-      - name: Compress Build Artifacts (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          powershell Compress-Archive -Path ${{ steps.strings.outputs.build-output-dir }}\* -DestinationPath rtsp-radio-${{ matrix.os }}.zip
-
-      - name: Upload Build Artifacts (Windows)
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts-${{ matrix.os }}-${{ matrix.build_type }}
-          path: rtsp-radio-${{ matrix.os }}.zip
-
-  prerelease:
-    name: Pre-release
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      # Step 1: Checkout the repository
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      # Step 2: Set up Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
-          cache: "npm"
-
-      # Step 3: Install dependencies
-      - name: Install Dependencies
-        run: npm ci
-
-      # Step 4: Load environment variables from .env
-      - name: Load Environment Variables
-        run: |
-          if [ -f .env ]; then
-            export $(cat .env | xargs)
-          fi
-
-      # Step 5: Run semantic-release
-      - name: Run Semantic Release
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npx semantic-release
