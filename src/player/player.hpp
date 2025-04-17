@@ -10,7 +10,14 @@ namespace player
 class Player
 {
 public:
+  /**
+   * @brief Constructor for the Player class.
+   */
   Player();
+
+  /**
+   * @brief Destructor for the Player class.
+   */
   ~Player();
 
   /**
@@ -18,6 +25,12 @@ public:
    */
   bool init();
 
+  /**
+   * @brief Plays the specified audio file.
+   *
+   * @param file_path The path to the audio file to play.
+   * @return true if the file is played successfully, false otherwise.
+   */
   bool play(const std::string& file_path);
 
 private:
