@@ -8,3 +8,93 @@ index 725cac8..b2e3d6f 100644
  project(PortAudio VERSION 19.8)
  
  #
+diff --git a/src/common/pa_debugprint.c b/src/common/pa_debugprint.c
+index 3e4024c..7036e01 100644
+--- a/src/common/pa_debugprint.c
++++ b/src/common/pa_debugprint.c
+@@ -55,16 +55,16 @@
+ 
+ #include "pa_debugprint.h"
+ 
+-// for OutputDebugStringA
++/* for OutputDebugStringA */
+ #if defined(_MSC_VER) && defined(PA_ENABLE_MSVC_DEBUG_OUTPUT)
+     #define WIN32_LEAN_AND_MEAN // exclude rare headers
+     #include "windows.h"
+ #endif
+ 
+-// User callback
++/* User callback */
+ static PaUtilLogCallback userCB = NULL;
+ 
+-// Sets user callback
++/* Sets user callback */
+ void PaUtil_SetDebugPrintFunction(PaUtilLogCallback cb)
+ {
+     userCB = cb;
+@@ -87,7 +87,7 @@ void PaUtil_SetDebugPrintFunction(PaUtilLogCallback cb)
+ 
+ void PaUtil_DebugPrint( const char *format, ... )
+ {
+-    // Optional logging into Output console of Visual Studio
++    /* Optional logging into Output console of Visual Studio */
+ #if defined(_MSC_VER) && defined(PA_ENABLE_MSVC_DEBUG_OUTPUT)
+     {
+         char buf[PA_LOG_BUF_SIZE];
+@@ -100,7 +100,7 @@ void PaUtil_DebugPrint( const char *format, ... )
+     }
+ #endif
+ 
+-    // Output to User-Callback
++    /* Output to User-Callback */
+     if (userCB != NULL)
+     {
+         char strdump[PA_LOG_BUF_SIZE];
+@@ -112,7 +112,7 @@ void PaUtil_DebugPrint( const char *format, ... )
+         va_end(ap);
+     }
+     else
+-    // Standard output to stderr
++    /* Standard output to stderr */
+     {
+         va_list ap;
+         va_start(ap, format);
+diff --git a/src/common/pa_front.c b/src/common/pa_front.c
+index 9f81f26..ec4c26f 100644
+--- a/src/common/pa_front.c
++++ b/src/common/pa_front.c
+@@ -363,17 +363,19 @@ PaError Pa_Initialize( void )
+     }
+     else if( initializing_ )
+     {
+-        // a concurrent initialization is already running
++        /* a concurrent initialization is already running */
+         PA_DEBUG(("Attempting to re-enter Pa_Initialize(), aborting!\n"));
+         result = paCanNotInitializeRecursively;
+     }
+     else
+     {
+-        // set initializing_ here to
+-        // let recursive calls execute the if branch above.
+-        // This can happen if a driver like FlexAsio itself uses portaudio
+-        // and avoids a stack overflow in the user application.
+-        // https://github.com/PortAudio/portaudio/issues/766
++        /**
++         * set initializing_ here to
++         * let recursive calls execute the if branch above.
++         * This can happen if a driver like FlexAsio itself uses portaudio
++         * and avoids a stack overflow in the user application.
++         * https://github.com/PortAudio/portaudio/issues/766
++         */
+         initializing_ = 1;
+ 
+         PA_VALIDATE_TYPE_SIZES;
+@@ -403,7 +405,7 @@ PaError Pa_Terminate( void )
+ 
+     if( PA_IS_INITIALISED_ )
+     {
+-        // leave initializationCount_>0 so that Pa_CloseStream() can execute
++        /* leave initializationCount_>0 so that Pa_CloseStream() can execute */
+         if( initializationCount_ == 1 )
+         {
+             CloseOpenStreams();
