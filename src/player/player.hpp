@@ -15,6 +15,11 @@ public:
   Player();
   ~Player();
 
+  /**
+   * @brief Initializes the audio player.
+   */
+  bool init();
+
   void play(const std::string& file_path);
   void stop();
 

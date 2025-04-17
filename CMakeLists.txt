@@ -21,6 +21,8 @@ set(SOURCE
 
   src/main.cpp
 
+  src/app/app.cpp
+
   src/player/player.cpp
 
   src/utils/file_selector.cpp

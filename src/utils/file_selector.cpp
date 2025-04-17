@@ -8,17 +8,15 @@ namespace fs = std::filesystem;
 
 namespace utils
 {
-std::vector<std::string> FileSelector::get_files(const std::string& directory_path)
+bool FileSelector::get_files(const std::string& directory_path, std::vector<std::string>& files)
 {
-  std::vector<std::string> wav_files;
-
   try
   {
     for(const auto& entry : fs::directory_iterator(directory_path))
     {
-      if(entry.is_regular_file() && entry.path().extension() == "wav")
+      if(entry.is_regular_file() && entry.path().extension() == ".wav")
       {
-        wav_files.push_back(entry.path().string());
+        files.push_back(entry.path().string());
       }
     }
   }
@@ -27,7 +25,7 @@ std::vector<std::string> FileSelector::get_files(const std::string& directory_pa
     std::cerr << "Error reading directory: " << e.what() << std::endl;
   }
 
-  return wav_files;
+  return files.size() > 0;
 }
 
 std::string FileSelector::pick_file(const std::vector<std::string>& files)
