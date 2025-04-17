@@ -2,7 +2,7 @@
 #include "utils/file_selector.hpp"
 
 #include <filesystem>
-#include <iostream>
+#include <loguru.hpp>
 
 namespace fs = std::filesystem;
 
@@ -12,7 +12,7 @@ bool App::init()
 {
   if(!_player.init())
   {
-    std::cerr << "Failed to initialize player." << std::endl;
+    LOG_S(ERROR) << "Failed to initialize player.";
     return false;
   }
   return true;
@@ -22,7 +22,7 @@ void App::start(const std::string& directory_path)
 {
   if(!is_directory_valid(directory_path))
   {
-    std::cerr << "Invalid directory path: " << directory_path << std::endl;
+    LOG_S(WARNING) << "Invalid directory path: " << directory_path;
     return;
   }
 
@@ -32,18 +32,18 @@ void App::start(const std::string& directory_path)
     std::string file_path;
     if(!get_file(files, file_path))
     {
-      std::cerr << "No playable file found in the directory." << std::endl;
+      LOG_S(WARNING) << "No playable file found in the directory.";
       break;
     }
 
     if(!_player.play(file_path))
     {
-      std::cerr << "Failed to play file: " << file_path << std::endl;
+      LOG_S(ERROR) << "Failed to play file: " << file_path;
       break;
     }
   }
 
-  std::cerr << "Playback finished." << std::endl;
+  LOG_S(INFO) << "Playback finished.";
 }
 
 bool App::is_directory_valid(const std::string& path) const

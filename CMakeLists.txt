@@ -11,7 +11,11 @@ project(RtspRadio C CXX)
 # Include the argparse library
 set(ARG_PARSER ${CMAKE_CURRENT_SOURCE_DIR}/imports/argparse/include)
 
+# Add definitions
+add_definitions(-DLOGURU_WITH_STREAMS=1)
+
 # Add PortAudio submodule
+add_subdirectory(imports/loguru)
 add_subdirectory(imports/portaudio)
 
 # Add subdirectories
@@ -39,6 +43,7 @@ target_include_directories(rtsp_radio
 target_link_libraries(rtsp_radio
   PRIVATE
   portaudio
+  loguru
 )
 
 target_sources(rtsp_radio

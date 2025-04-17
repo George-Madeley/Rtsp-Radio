@@ -1,7 +1,7 @@
 #include "file_selector.hpp"
 
 #include <filesystem>
-#include <iostream>
+#include <loguru.hpp>
 #include <time.h>
 
 namespace fs = std::filesystem;
@@ -22,7 +22,7 @@ bool FileSelector::get_files(const std::string& directory_path, std::vector<std:
   }
   catch(const std::exception& e)
   {
-    std::cerr << "Error reading directory: " << e.what() << std::endl;
+    LOG_S(ERROR) << "Error reading directory: " << e.what();
   }
 
   return files.size() > 0;

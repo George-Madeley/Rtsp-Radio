@@ -4,6 +4,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <loguru.hpp>
 #include <vector>
 
 namespace player
@@ -24,13 +25,13 @@ bool Player::init()
 
 bool Player::play(const std::string& file_path)
 {
-  std::cout << "Playing: " << file_path << std::endl;
+  LOG_S(INFO) << "Playing: " << file_path;
 
   // Open the WAV file
   std::ifstream wav_file(file_path, std::ios::binary);
   if(!wav_file)
   {
-    std::cerr << "Failed to open WAV file: " << file_path << std::endl;
+    LOG_S(ERROR) << "Failed to open WAV file: " << file_path;
     return false;
   }
 
@@ -39,7 +40,7 @@ bool Player::play(const std::string& file_path)
   wav_file.read(header, sizeof(header));
   if(wav_file.gcount() < sizeof(header))
   {
-    std::cerr << "Invalid WAV file: " << file_path << std::endl;
+    LOG_S(ERROR) << "Invalid WAV file: " << file_path;
     return false;
   }
 
@@ -50,13 +51,13 @@ bool Player::play(const std::string& file_path)
 
   if(std::strncmp(header, "RIFF", 4) != 0 || std::strncmp(header + 8, "WAVE", 4) != 0)
   {
-    std::cerr << "Invalid WAV file format: " << file_path << std::endl;
+    LOG_S(ERROR) << "Invalid WAV file format: " << file_path;
     return false;
   }
 
   if(bits_per_sample != 16)
   {
-    std::cerr << "Only 16-bit WAV files are supported." << std::endl;
+    LOG_S(ERROR) << "Only 16-bit WAV files are supported.";
     return false;
   }
 
@@ -69,13 +70,13 @@ bool Player::play(const std::string& file_path)
 
   if(output_params.device == paNoDevice)
   {
-    std::cerr << "No default output device available." << std::endl;
+    LOG_S(ERROR) << "No default output device available.";
     return false;
   }
 
   if(Pa_GetDeviceInfo(output_params.device) == nullptr)
   {
-    std::cerr << "Failed to get device info." << std::endl;
+    LOG_S(ERROR) << "Failed to get device info.";
     return false;
   }
   output_params.suggestedLatency = Pa_GetDeviceInfo(output_params.device)->defaultLowOutputLatency;
@@ -84,13 +85,13 @@ bool Player::play(const std::string& file_path)
   if(Pa_OpenStream(&stream, nullptr, &output_params, sample_rate, paFramesPerBufferUnspecified, paClipOff, nullptr,
          nullptr) != paNoError)
   {
-    std::cerr << "Failed to open PortAudio stream." << std::endl;
+    LOG_S(ERROR) << "Failed to open PortAudio stream.";
     return false;
   }
 
   if(Pa_StartStream(stream) != paNoError)
   {
-    std::cerr << "Failed to start PortAudio stream." << std::endl;
+    LOG_S(ERROR) << "Failed to start PortAudio stream.";
     Pa_CloseStream(stream);
     return false;
   }
@@ -104,7 +105,7 @@ bool Player::play(const std::string& file_path)
     std::streamsize frames_read = wav_file.gcount() / (bits_per_sample / 8 * channels);
     if(Pa_WriteStream(stream, buffer.data(), (unsigned long)frames_read) != paNoError)
     {
-      std::cerr << "Error writing to PortAudio stream." << std::endl;
+      LOG_S(ERROR) << "Error writing to PortAudio stream.";
       break;
     }
   }
@@ -121,7 +122,7 @@ bool Player::play(const std::string& file_path)
   Pa_CloseStream(stream);
   wav_file.close();
 
-  std::cout << "Finished playing: " << file_path << std::endl;
+  LOG_S(INFO) << "Finished playing: " << file_path;
 
   return true;
 }
